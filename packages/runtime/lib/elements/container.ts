@@ -168,7 +168,7 @@ export class ContainerElement extends HTMLElement {
     const ociContext = await extractOCIFile(new Uint8Array(ociContextBuffer));
     const entrypoint = ociContext.entrypoint;
     const entrypointFile = ociContext.fs[ociContext.entrypoint];
-    const entryBlob = new Blob([entrypointFile.content], {
+    const entryBlob = new Blob([new Uint8Array(entrypointFile.content)], {
       type: "application/wasm",
     });
     const entryURL = URL.createObjectURL(entryBlob);
@@ -216,7 +216,7 @@ export class ContainerElement extends HTMLElement {
         (e instanceof Error || (typeof e === "object" && "message" in e))
       ) {
         this.terminal.write(
-          `\n[Crashed] ${(e as any).type ?? "Error"}: ${e.message}\n`
+          `\n[Crashed] ${(e as any).type ?? "Error"}: ${e.message}\n`,
         );
       }
       return { resultType: "crash", error: makeRunnoError(e) };
@@ -260,7 +260,7 @@ export class ContainerElement extends HTMLElement {
   attributeChangedCallback(
     name: keyof typeof ATTRIBUTE_MAP,
     _: string,
-    newValue: string
+    newValue: string,
   ) {
     if (name === "autorun" && !this.hasRun && this.isConnected) {
       this.autorun = true;
