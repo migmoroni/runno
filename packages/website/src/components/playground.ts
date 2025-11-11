@@ -224,10 +224,14 @@ export class WebsitePlayground extends TailwindElement {
 
       const newFiles: File[] = [];
       for (const [path, wasiFile] of Object.entries(result.fs)) {
+        const content =
+          typeof wasiFile.content === "string"
+            ? wasiFile.content
+            : new Uint8Array(wasiFile.content);
         newFiles.push(
-          new File([wasiFile.content], path, {
+          new File([content], path, {
             lastModified: wasiFile.timestamps.modification.getTime(),
-          })
+          }),
         );
       }
       this.files = newFiles;
@@ -250,7 +254,7 @@ export class WebsitePlayground extends TailwindElement {
     for (const file of Array.from(inputFiles)) {
       if (file.name.endsWith(".tar.gz")) {
         const extractedFiles = await extractTarGz(
-          new Uint8Array(await file.arrayBuffer())
+          new Uint8Array(await file.arrayBuffer()),
         );
         for (const extractedFile of extractedFiles) {
           newFiles.push(extractedFile);
@@ -266,7 +270,7 @@ export class WebsitePlayground extends TailwindElement {
         new File([file], `/${file.name}`.replaceAll("//", "/"), {
           type: file.type,
           lastModified: file.lastModified,
-        })
+        }),
     );
 
     this.files = [...newFiles, ...this.files];
@@ -434,17 +438,16 @@ export class WebsitePlayground extends TailwindElement {
               </div>
               <div class="h-64 overflow-auto p-3">
                 ${this.files.map(
-                  (f, i) =>
-                    html`
-                      <playground-file
-                        .file=${f}
-                        @file-change=${(event: CustomEvent) =>
-                          this.onUpdateFile(i, event)}
-                        @file-delete=${(event: CustomEvent) =>
-                          this.onDeleteFile(i, event)}
-                        class="my-3"
-                      ></playground-file>
-                    `
+                  (f, i) => html`
+                    <playground-file
+                      .file=${f}
+                      @file-change=${(event: CustomEvent) =>
+                        this.onUpdateFile(i, event)}
+                      @file-delete=${(event: CustomEvent) =>
+                        this.onDeleteFile(i, event)}
+                      class="my-3"
+                    ></playground-file>
+                  `,
                 )}
               </div>
             </div>
